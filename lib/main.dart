@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
@@ -7,15 +8,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'SSC Group',
       debugShowCheckedModeBanner: false,
-      title: 'SSC Group of Institutions',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
       ),
       home: const WebViewScreen(),
     );
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
 }
 
 class WebViewScreen extends StatefulWidget {
-  const WebViewScreen({Key? key}) : super(key: key);
+  const WebViewScreen({super.key});
 
   @override
   State<WebViewScreen> createState() => _WebViewScreenState();
@@ -31,52 +32,37 @@ class WebViewScreen extends StatefulWidget {
 
 class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize the WebView and load your website
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
-          },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('Webview error: ${error.description}');
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org'));
+      ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            WebViewWidget(controller: _controller),
-            if (_isLoading)
-              Container(
-                color: Colors.white,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                  ),
-                ),
-              ),
-          ],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        if (didPop) {
+          return;
+        }
+        // Handle the Android hardware back button
+        if (await _controller.canGoBack()) {
+          _controller.goBack();
+        } else {
+          // If there is no browser history left, close the app
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        // SafeArea prevents the website from hiding behind the phone's notch or status bar
+        body: SafeArea(
+          child: WebViewWidget(controller: _controller),
         ),
       ),
     );
