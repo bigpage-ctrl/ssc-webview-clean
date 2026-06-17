@@ -1,39 +1,17 @@
 workflows:
-  android-workflow:
-    name: Android WebView Build
-    max_build_duration: 60
+  android-debug:
+    name: Android Build
+    instance_type: mac_mini_m1
     environment:
       flutter: stable
     scripts:
-      - name: Generate missing Android folder & Add Permissions
+      - name: Install dependencies
+        script: flutter pub get
+      - name: Generate App Icons
         script: |
-          # 1. Create a temporary project
-          flutter create --platforms=android --org org.sscgroup.webview temp_project
-          
-          # 2. Move the newly generated android folder into your project
-          mv temp_project/android ./android
-          
-          # 3. Clean up the workspace
-          rm -rf temp_project
-          
-          # 4. FORCE INJECT INTERNET PERMISSIONS (Fixes ERR_CACHE_MISS)
-          perl -pi -e 's/(<manifest[^>]*>)/$1\n    <uses-permission android:name="android.permission.INTERNET"\/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"\/>/g' android/app/src/main/AndroidManifest.xml
-          
-          # 5. ALLOW HTTP TRAFFIC (Prevents errors if the site does any non-https redirects)
-          perl -pi -e 's/(<application)/$1 android:usesCleartextTraffic="true"/g' android/app/src/main/AndroidManifest.xml
-          
-      - name: Get Flutter packages
-        script: |
-          flutter pub get
-          
-      - name: Build Android App Bundle (For Google Play Store)
-        script: |
-          flutter build appbundle --release
-          
-      - name: Build Android APK (For Direct Phone Testing)
+          dart run flutter_launcher_icons
+      - name: Build APK
         script: |
           flutter build apk --release
-
     artifacts:
-      - build/app/outputs/**/*.apk
-      - build/app/outputs/**/*.aab
+      - build/app/outputs/flutter-apk/app-release.apk
