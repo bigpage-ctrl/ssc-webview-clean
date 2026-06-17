@@ -5,16 +5,22 @@ workflows:
     environment:
       flutter: stable
     scripts:
-      - name: Generate missing Android folder
+      - name: Generate missing Android folder & Add Permissions
         script: |
-          # Creates a temporary project with a custom Application ID
+          # 1. Create a temporary project
           flutter create --platforms=android --org org.sscgroup.webview temp_project
           
-          # Moves the newly generated android folder into your project
+          # 2. Move the newly generated android folder into your project
           mv temp_project/android ./android
           
-          # Deletes the temporary project to keep the workspace clean
+          # 3. Clean up the workspace
           rm -rf temp_project
+          
+          # 4. FORCE INJECT INTERNET PERMISSIONS (Fixes ERR_CACHE_MISS)
+          perl -pi -e 's/(<manifest[^>]*>)/$1\n    <uses-permission android:name="android.permission.INTERNET"\/>\n    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"\/>/g' android/app/src/main/AndroidManifest.xml
+          
+          # 5. ALLOW HTTP TRAFFIC (Prevents errors if the site does any non-https redirects)
+          perl -pi -e 's/(<application)/$1 android:usesCleartextTraffic="true"/g' android/app/src/main/AndroidManifest.xml
           
       - name: Get Flutter packages
         script: |
