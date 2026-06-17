@@ -4,7 +4,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 void main() {
-  // Sets the status bar color to match the app theme
+  WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.blueAccent,
     statusBarIconBrightness: Brightness.light,
@@ -31,15 +31,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setCacheMode(CacheMode.preferCache)
+      ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(NavigationDelegate(
-        onProgress: (int progress) {
-          setState(() => loadingProgress = progress / 100);
-        },
-        onWebResourceError: (WebResourceError error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Network error: ${error.description}')),
-          );
-        },
+        onProgress: (int progress) => setState(() => loadingProgress = progress / 100),
+        onWebResourceError: (error) => debugPrint('Error: ${error.description}'),
       ))
       ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
@@ -63,12 +59,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
         if (await _controller.canGoBack()) {
           _controller.goBack();
         } else {
-          // Confirm exit to prevent accidental app closure
           bool? exit = await showDialog(
             context: context,
             builder: (context) => AlertDialog(
               title: const Text('Exit App'),
-              content: const Text('Are you sure you want to exit the app?'),
+              content: const Text('Are you sure you want to exit?'),
               actions: [
                 TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
                 TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
@@ -79,21 +74,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("SSC Group"),
-          backgroundColor: Colors.blueAccent,
-          foregroundColor: Colors.white,
-        ),
+        appBar: AppBar(title: const Text("SSC Group"), backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
         drawer: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(color: Colors.blueAccent),
-                child: Center(
-                  child: Text('SSC Portal', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                ),
-              ),
+              const DrawerHeader(decoration: BoxDecoration(color: Colors.blueAccent), child: Center(child: Text('SSC Portal', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))),
               _buildMenuTile(Icons.home, 'Home', 'https://sscgroupofinstitutions.org/'),
               _buildMenuTile(Icons.info, 'About SSC', 'https://sscgroupofinstitutions.org/about-ssc/'),
               _buildMenuTile(Icons.person, 'Faculty', 'https://sscgroupofinstitutions.org/faculty/'),
@@ -107,13 +93,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              if (loadingProgress < 1.0)
-                LinearPercentIndicator(
-                  lineHeight: 4.0,
-                  percent: loadingProgress,
-                  backgroundColor: Colors.grey[200],
-                  progressColor: Colors.blueAccent,
-                ),
+              if (loadingProgress < 1.0) LinearPercentIndicator(lineHeight: 4.0, percent: loadingProgress, backgroundColor: Colors.grey[200], progressColor: Colors.blueAccent),
               Expanded(child: WebViewWidget(controller: _controller)),
             ],
           ),
