@@ -1,27 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:percent_indicator/linear_percent_indicator.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SSC Group',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
-      home: const WebViewScreen(),
-    );
-  }
-}
+void main() => runApp(const MaterialApp(home: WebViewScreen()));
 
 class WebViewScreen extends StatefulWidget {
   const WebViewScreen({super.key});
@@ -32,14 +14,18 @@ class WebViewScreen extends StatefulWidget {
 
 class _WebViewScreenState extends State<WebViewScreen> {
   late final WebViewController _controller;
+  double loadingProgress = 0.0;
 
   @override
   void initState() {
     super.initState();
-    
-    // Initialize the WebView and load your website
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(NavigationDelegate(
+        onProgress: (int progress) {
+          setState(() => loadingProgress = progress / 100);
+        },
+      ))
       ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
 
@@ -48,21 +34,27 @@ class _WebViewScreenState extends State<WebViewScreen> {
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) async {
-        if (didPop) {
-          return;
-        }
-        // Handle the Android hardware back button
         if (await _controller.canGoBack()) {
           _controller.goBack();
         } else {
-          // If there is no browser history left, close the app
           SystemNavigator.pop();
         }
       },
       child: Scaffold(
-        // SafeArea prevents the website from hiding behind the phone's notch or status bar
         body: SafeArea(
-          child: WebViewWidget(controller: _controller),
+          child: Column(
+            children: [
+              // Loading bar that appears at the top
+              if (loadingProgress < 1.0)
+                LinearPercentIndicator(
+                  lineHeight: 4.0,
+                  percent: loadingProgress,
+                  backgroundColor: Colors.grey[200],
+                  progressColor: Colors.blueAccent,
+                ),
+              Expanded(child: WebViewWidget(controller: _controller)),
+            ],
+          ),
         ),
       ),
     );
