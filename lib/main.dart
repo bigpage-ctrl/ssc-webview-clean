@@ -3,7 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
-void main() => runApp(const MaterialApp(home: WebViewScreen()));
+void main() => runApp(const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: WebViewScreen(),
+    ));
 
 class WebViewScreen extends StatefulWidget {
   const WebViewScreen({super.key});
@@ -29,6 +32,18 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
 
+  // Helper method to build menu items
+  ListTile _buildMenuTile(IconData icon, String title, String url) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.blueAccent),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      onTap: () {
+        _controller.loadRequest(Uri.parse(url));
+        Navigator.pop(context); // Closes the drawer
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -41,10 +56,36 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       },
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text("SSC Group"),
+          backgroundColor: Colors.blueAccent,
+          foregroundColor: Colors.white,
+        ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              const DrawerHeader(
+                decoration: BoxDecoration(color: Colors.blueAccent),
+                child: Center(
+                  child: Text('SSC Portal', 
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              _buildMenuTile(Icons.home, 'Home', 'https://sscgroupofinstitutions.org/'),
+              _buildMenuTile(Icons.info, 'About SSC', 'https://sscgroupofinstitutions.org/about-ssc/'),
+              _buildMenuTile(Icons.person, 'Faculty', 'https://sscgroupofinstitutions.org/faculty/'),
+              _buildMenuTile(Icons.library_books, 'Digital Library', 'https://sscgroupofinstitutions.org/digital-library/'),
+              _buildMenuTile(Icons.event, 'News & Events', 'https://sscgroupofinstitutions.org/news-events/'),
+              _buildMenuTile(Icons.notifications_active, 'Notice Board', 'https://sscgroupofinstitutions.org/notice/'),
+              _buildMenuTile(Icons.contact_mail, 'Contact Us', 'https://sscgroupofinstitutions.org/contact-us/'),
+            ],
+          ),
+        ),
         body: SafeArea(
           child: Column(
             children: [
-              // Loading bar that appears at the top
+              // Loading Progress Bar
               if (loadingProgress < 1.0)
                 LinearPercentIndicator(
                   lineHeight: 4.0,
