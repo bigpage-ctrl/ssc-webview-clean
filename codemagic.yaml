@@ -1,23 +1,33 @@
 workflows:
-  android-release:
-    name: Android Release Build
-    max_build_duration: 30
-    instance_type: mac_mini_m1
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: '*'
+  android-workflow:
+    name: Android WebView Build
+    max_build_duration: 60
     environment:
-      java: 17
-      flutter: 3.10.6
+      flutter: stable
     scripts:
-      - name: Fetch Flutter Dependencies
-        script: flutter pub get
-      - name: Build Android App Bundle (AAB)
-        script: flutter build appbundle --release
-      - name: Build Android APK (For Testing)
-        script: flutter build apk --release
+      - name: Generate missing Android folder
+        script: |
+          # Creates a temporary project with a custom Application ID
+          flutter create --platforms=android --org org.sscgroup.webview temp_project
+          
+          # Moves the newly generated android folder into your project
+          mv temp_project/android ./android
+          
+          # Deletes the temporary project to keep the workspace clean
+          rm -rf temp_project
+          
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+          
+      - name: Build Android App Bundle (For Google Play Store)
+        script: |
+          flutter build appbundle --release
+          
+      - name: Build Android APK (For Direct Phone Testing)
+        script: |
+          flutter build apk --release
+
     artifacts:
-      - build/app/outputs/bundle/release/*.aab
-      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/**/*.apk
+      - build/app/outputs/**/*.aab
