@@ -3,10 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
-void main() => runApp(const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: WebViewScreen(),
-    ));
+void main() {
+  // Sets the status bar color to match the app theme
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.blueAccent,
+    statusBarIconBrightness: Brightness.light,
+  ));
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: WebViewScreen(),
+  ));
+}
 
 class WebViewScreen extends StatefulWidget {
   const WebViewScreen({super.key});
@@ -28,18 +35,22 @@ class _WebViewScreenState extends State<WebViewScreen> {
         onProgress: (int progress) {
           setState(() => loadingProgress = progress / 100);
         },
+        onWebResourceError: (WebResourceError error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Network error: ${error.description}')),
+          );
+        },
       ))
       ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
 
-  // Helper method to build menu items
   ListTile _buildMenuTile(IconData icon, String title, String url) {
     return ListTile(
       leading: Icon(icon, color: Colors.blueAccent),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       onTap: () {
         _controller.loadRequest(Uri.parse(url));
-        Navigator.pop(context); // Closes the drawer
+        Navigator.pop(context);
       },
     );
   }
@@ -52,7 +63,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
         if (await _controller.canGoBack()) {
           _controller.goBack();
         } else {
-          SystemNavigator.pop();
+          // Confirm exit to prevent accidental app closure
+          bool? exit = await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Exit App'),
+              content: const Text('Are you sure you want to exit the app?'),
+              actions: [
+                TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('No')),
+                TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Yes')),
+              ],
+            ),
+          );
+          if (exit == true) SystemNavigator.pop();
         }
       },
       child: Scaffold(
@@ -68,8 +91,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
               const DrawerHeader(
                 decoration: BoxDecoration(color: Colors.blueAccent),
                 child: Center(
-                  child: Text('SSC Portal', 
-                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                  child: Text('SSC Portal', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 ),
               ),
               _buildMenuTile(Icons.home, 'Home', 'https://sscgroupofinstitutions.org/'),
@@ -85,7 +107,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // Loading Progress Bar
               if (loadingProgress < 1.0)
                 LinearPercentIndicator(
                   lineHeight: 4.0,
