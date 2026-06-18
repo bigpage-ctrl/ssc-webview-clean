@@ -1,5 +1,5 @@
 workflows:
-  android-debug:
+  android-build:
     name: Android Build
     instance_type: mac_mini_m1
     environment:
@@ -8,10 +8,8 @@ workflows:
       - name: Install dependencies
         script: flutter pub get
       - name: Generate App Icons
-        script: |
-          dart run flutter_launcher_icons
+        script: dart run flutter_launcher_icons
       - name: Build APK
-        script: |
-          flutter build apk --release
+        script: flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
