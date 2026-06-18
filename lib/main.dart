@@ -45,7 +45,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       onTap: () {
         _controller.loadRequest(Uri.parse(url));
-        Navigator.pop(context);
+        Navigator.pop(context); // Close the drawer
       },
     );
   }
@@ -77,7 +77,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
           title: const Text("SSC Group"), 
           backgroundColor: Colors.blueAccent, 
           foregroundColor: Colors.white,
-          // EXPLICITLY ADDS AND FORCES THE SIDE MENU ICON TO SHOW
           leading: Builder(
             builder: (BuildContext context) {
               return IconButton(
@@ -114,16 +113,48 @@ class _WebViewScreenState extends State<WebViewScreen> {
           ),
         ),
         body: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              if (loadingProgress < 1.0) 
-                LinearPercentIndicator(
-                  lineHeight: 4.0, 
-                  percent: loadingProgress, 
-                  backgroundColor: Colors.grey[200], 
-                  progressColor: Colors.blueAccent
+              // 1. Bottom Layer: The actual website (hidden until loaded)
+              WebViewWidget(controller: _controller),
+
+              // 2. Top Layer: The Branded Loading Screen Overlay
+              if (loadingProgress < 1.0)
+                Container(
+                  color: Colors.white, // Solid white background to hide the empty webview
+                  width: double.infinity,
+                  height: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Your App Logo displayed prominently
+                      Image.asset('assets/new-logo.png', width: 180),
+                      const SizedBox(height: 40),
+                      
+                      // Centered modern loading bar
+                      LinearPercentIndicator(
+                        width: 250,
+                        alignment: MainAxisAlignment.center,
+                        lineHeight: 8.0,
+                        percent: loadingProgress,
+                        barRadius: const Radius.circular(4),
+                        backgroundColor: Colors.grey[200],
+                        progressColor: Colors.blueAccent,
+                      ),
+                      const SizedBox(height: 15),
+                      
+                      // Percentage text below the bar
+                      Text(
+                        'Loading SSC Portal... ${(loadingProgress * 100).toInt()}%',
+                        style: const TextStyle(
+                          fontSize: 16, 
+                          color: Colors.blueAccent, 
+                          fontWeight: FontWeight.w600
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              Expanded(child: WebViewWidget(controller: _controller)),
             ],
           ),
         ),
