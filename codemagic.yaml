@@ -19,12 +19,20 @@ workflows:
           "
       - name: Install dependencies
         script: flutter pub get
-      - name: Generate App Icons
-        script: dart run flutter_launcher_icons
-      - name: Build APK and AAB
+      - name: Verify and Generate App Icons
         script: |
-          flutter build apk --release
-          flutter build appbundle --release
+          if [ ! -f "assets/new-logo.png" ]; then
+            echo "--------------------------------------------------------"
+            echo "ERROR: 'assets/new-logo.png' was not found!"
+            echo "Please check your GitHub repository folder and file name."
+            echo "--------------------------------------------------------"
+            exit 1
+          fi
+          dart run flutter_launcher_icons
+      - name: Build APK and AAB (Icon Fix)
+        script: |
+          flutter build apk --release --no-tree-shake-icons
+          flutter build appbundle --release --no-tree-shake-icons
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
       - build/app/outputs/bundle/release/app-release.aab
