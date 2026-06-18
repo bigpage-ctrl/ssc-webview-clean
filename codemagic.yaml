@@ -5,6 +5,18 @@ workflows:
     environment:
       flutter: stable
     scripts:
+      - name: Clear and Recreate Android cleanly
+        script: |
+          rm -rf android
+          flutter create --platforms=android .
+      - name: Inject Internet Permission
+        script: |
+          python3 -c "
+          path = 'android/app/src/main/AndroidManifest.xml'
+          with open(path, 'r') as f: text = f.read()
+          text = text.replace('<application', '<uses-permission android:name=\"android.permission.INTERNET\"/>\n    <application')
+          with open(path, 'w') as f: f.write(text)
+          "
       - name: Install dependencies
         script: flutter pub get
       - name: Generate App Icons
