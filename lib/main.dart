@@ -35,7 +35,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) => setState(() => loadingProgress = progress / 100),
-        onWebResourceError: (error) => debugPrint('Error: ${error.description}'),
+        onWebResourceError: (error) => debugPrint('Resource error: ${error.description}'),
       ))
       ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
@@ -74,12 +74,24 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text("SSC Group"), backgroundColor: Colors.blueAccent, foregroundColor: Colors.white),
+        appBar: AppBar(
+          title: const Text("SSC Group"), 
+          backgroundColor: Colors.blueAccent, 
+          foregroundColor: Colors.white
+        ),
         drawer: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
-              const DrawerHeader(decoration: BoxDecoration(color: Colors.blueAccent), child: Center(child: Text('SSC Portal', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)))),
+              const DrawerHeader(
+                decoration: BoxDecoration(color: Colors.blueAccent), 
+                child: Center(
+                  child: Text(
+                    'SSC Portal', 
+                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
+                  )
+                )
+              ),
               _buildMenuTile(Icons.home, 'Home', 'https://sscgroupofinstitutions.org/'),
               _buildMenuTile(Icons.info, 'About SSC', 'https://sscgroupofinstitutions.org/about-ssc/'),
               _buildMenuTile(Icons.person, 'Faculty', 'https://sscgroupofinstitutions.org/faculty/'),
@@ -93,7 +105,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              if (loadingProgress < 1.0) LinearPercentIndicator(lineHeight: 4.0, percent: loadingProgress, backgroundColor: Colors.grey[200], progressColor: Colors.blueAccent),
+              if (loadingProgress < 1.0) 
+                LinearPercentIndicator(
+                  lineHeight: 4.0, 
+                  percent: loadingProgress, 
+                  backgroundColor: Colors.grey[200], 
+                  progressColor: Colors.blueAccent
+                ),
               Expanded(child: WebViewWidget(controller: _controller)),
             ],
           ),
