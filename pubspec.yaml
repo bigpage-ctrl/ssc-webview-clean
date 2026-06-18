@@ -18,8 +18,12 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   flutter_launcher_icons: ^0.13.1
 
+flutter:
+  assets:
+    - assets/
+  uses-material-design: true
+
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: true       # Changed to true to safely overwrite the default icon
   ios: false
   image_path: "assets/new-logo.png"
-  min_sdk_android: 21
