@@ -145,7 +145,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
                       
                       // Percentage text below the bar
                       Text(
-                        'Loading SSC Portal... ${(loadingProgress * 100).toInt()}%',
+                        'Loading SSC Portal...',
                         style: const TextStyle(
                           fontSize: 16, 
                           color: Colors.blueAccent, 
