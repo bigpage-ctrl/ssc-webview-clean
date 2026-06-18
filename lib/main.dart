@@ -76,7 +76,19 @@ class _WebViewScreenState extends State<WebViewScreen> {
         appBar: AppBar(
           title: const Text("SSC Group"), 
           backgroundColor: Colors.blueAccent, 
-          foregroundColor: Colors.white
+          foregroundColor: Colors.white,
+          // EXPLICITLY ADDS AND FORCES THE SIDE MENU ICON TO SHOW
+          leading: Builder(
+            builder: (BuildContext context) {
+              return IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+                tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              );
+            },
+          ),
         ),
         drawer: Drawer(
           child: ListView(
