@@ -31,7 +31,6 @@ class _WebViewScreenState extends State<WebViewScreen> {
     super.initState();
     _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setCacheMode(CacheMode.preferCache)
       ..setBackgroundColor(Colors.white)
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) => setState(() => loadingProgress = progress / 100),
