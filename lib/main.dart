@@ -36,6 +36,32 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setNavigationDelegate(NavigationDelegate(
         onProgress: (int progress) => setState(() => loadingProgress = progress / 100),
         onWebResourceError: (error) => debugPrint('Resource error: ${error.description}'),
+
+        // --- ADD THIS NEW BLOCK ---
+        onNavigationRequest: (NavigationRequest request) async {
+          final url = request.url;
+          
+          // Check if the link is a phone call, email, or WhatsApp message
+          if (url.startsWith('tel:') || 
+              url.startsWith('mailto:') || 
+              url.startsWith('whatsapp:') || 
+              url.startsWith('https://wa.me/')) {
+            
+            final uri = Uri.parse(url);
+            // Ask the phone to open the correct native app
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } else {
+              debugPrint('Could not launch $url');
+            }
+            // Stop the WebView from trying to load this link internally
+            return NavigationDecision.prevent;
+          }
+          
+          // Let normal website links load as usual
+          return NavigationDecision.navigate;
+        },
+        // --- END OF NEW BLOCK ---
       ))
       ..loadRequest(Uri.parse('https://sscgroupofinstitutions.org/'));
   }
